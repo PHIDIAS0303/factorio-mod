@@ -38,7 +38,7 @@ Save the current profile.
 Import or Export Strings or files.
 '''
 
-def interface():
+def graphical_interface():
     graphical_layout = [[]]
     address_default = os.path.expanduser('~')
     address_default = address_default.replace('\\', '/')
@@ -119,4 +119,4 @@ def interface():
             graphical_window.close()
             break
 
-interface()
+graphical_interface()
