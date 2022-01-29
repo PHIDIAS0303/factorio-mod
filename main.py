@@ -9,7 +9,7 @@ import zlib
 # Settings
 # Edition, Version, Revision
 setting_edition = 4
-setting_revision = 1
+setting_revision = 5
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 # Title
 setting_title = 'EXP MOD COPY'
@@ -40,6 +40,16 @@ Save the current profile.
 
 [5]
 Import or Export Strings or files.
+'''
+
+'''
+string = '1234567890'
+compressed_string = zlib.compress(bytes(string, 'utf-8'), zlib.Z_BEST_COMPRESSION)
+
+print(string)
+print(compressed_string)
+print((zlib.decompress(compressed_string)).decode('utf-8'))
+
 '''
 
 # Create Database if inital launch.
