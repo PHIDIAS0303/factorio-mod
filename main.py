@@ -4,6 +4,7 @@ import json
 import shutil
 import PySimpleGUI as gui
 
+# Settings
 # Edition, Version, Revision
 setting_edition = 4
 setting_revision = 1
@@ -17,10 +18,11 @@ setting_font = 'Arial'
 setting_font_size = 14
 # graphical_window Size
 setting_window_size = [650, 250]
+# Database Filename
+setting_app_database = 'main.db'
 
+# TODO List
 '''
-TODO
-
 [1]
 compare mod version.
 
@@ -38,6 +40,18 @@ Save the current profile.
 Import or Export Strings or files.
 '''
 
+# Create Database if inital launch.
+with sqlite3.connect(setting_app_database) as setting_app_database_connection:
+    setting_app_database_cursor = setting_app_database_connection.cursor()
+
+    try:
+        setting_app_database_cursor.execute('CREATE TABLE user (id INTEGER, name TEXT, tid INTEGER, did INTEGER)')
+    except sqlite3.OperationalError:
+        pass
+
+    setting_app_database_connection.commit()
+
+# Main Application
 def graphical_interface():
     graphical_layout = [[]]
     address_default = os.path.expanduser('~')
