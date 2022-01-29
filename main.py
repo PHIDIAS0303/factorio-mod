@@ -2,6 +2,7 @@ import os
 import re
 import json
 import shutil
+import sqlite3
 import PySimpleGUI as gui
 
 # Settings
@@ -45,7 +46,7 @@ with sqlite3.connect(setting_app_database) as setting_app_database_connection:
     setting_app_database_cursor = setting_app_database_connection.cursor()
 
     try:
-        setting_app_database_cursor.execute('CREATE TABLE user (id INTEGER, name TEXT, tid INTEGER, did INTEGER)')
+        setting_app_database_cursor.execute('CREATE TABLE profile (id INTEGER, data TEXT)')
     except sqlite3.OperationalError:
         pass
 
