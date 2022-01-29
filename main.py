@@ -69,12 +69,12 @@ def interface():
         graphical_layout.append([gui.ProgressBar(len(mod_result), orientation='h', size=(100, 20), key='progress_bar')])
         graphical_layout.append([gui.Cancel(font=(setting_font, setting_font_size))])
         graphical_window.hide()
-        graphical_window2 = gui.graphical_window(setting_title, graphical_layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
+        graphical_window2 = gui.Window(setting_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
 
         for i in range(len(mod_result)):
             graphical_window2['info'].update(str('Copying (' + str(i + 1) + '/' + str(len(mod_result)) + ') ' + str(mod_result[i][0])))
             graphical_window2['progress_bar'].UpdateBar(i + 1)
-            shutil.copyfile(str(address_mod_list) + str(mod_result[i][1]), str(address_mod_copy) + str(mod_result[i][1]))
+            # shutil.copyfile(str(address_mod_list) + str(mod_result[i][1]), str(address_mod_copy) + str(mod_result[i][1]))
             
             event, values = graphical_window2.Read(timeout=10)
 
@@ -85,7 +85,7 @@ def interface():
         gui.popup_ok('Tasks have completed successfully.', title=setting_title, font=(setting_font, setting_font_size))
         graphical_window2.close()
 
-    graphical_window = gui.graphical_window(setting_title, graphical_layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
+    graphical_window = gui.Window(setting_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
 
     while True:
         event, values = graphical_window.Read(timeout=100)
