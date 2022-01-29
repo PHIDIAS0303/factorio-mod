@@ -18,6 +18,26 @@ setting_font_size = 14
 # graphical_window Size
 setting_window_size = [650, 250]
 
+'''
+TODO
+
+[1]
+compare mod version.
+
+[2]
+import json file.
+
+[3]
+Switch mod profiles using sqlite or other means.
+Only by switching all to False then those to True.
+
+[4]
+Save the current profile.
+
+[5]
+Import or Export Strings or files.
+'''
+
 def interface():
     graphical_layout = [[]]
     address_default = os.path.expanduser('~')
