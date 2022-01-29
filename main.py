@@ -39,7 +39,7 @@ def interface():
         mod_list_json = mod_list_json['mods']
 
         mod_list = []
-        mod_res = []
+        mod_result = []
 
         for i in range(len(mod_list_json)):
             if mod_list_json[i]['enabled'] == True:
@@ -58,7 +58,7 @@ def interface():
         for i in range(len(mod_list)):
             for j in range(len(mod_file_list_compare)):
                 if re.search(str('^.*(' + str(mod_list[i]) + ').*$'), str(mod_file_list_compare[j])):
-                    mod_res.append([mod_list[i], mod_file_list[j]])
+                    mod_result.append([mod_list[i], mod_file_list[j]])
 
         if not os.path.exists(address_mod_copy):
             os.mkdir(address_mod_copy, 0o666)
@@ -66,15 +66,15 @@ def interface():
         graphical_layout = [[]]
         graphical_layout.append([gui.Text('Progress:', font=(setting_font, setting_font_size))])
         graphical_layout.append([gui.Text('', key='info', font=(setting_font, setting_font_size))])
-        graphical_layout.append([gui.ProgressBar(len(mod_res), orientation='h', size=(100, 20), key='progress_bar')])
+        graphical_layout.append([gui.ProgressBar(len(mod_result), orientation='h', size=(100, 20), key='progress_bar')])
         graphical_layout.append([gui.Cancel(font=(setting_font, setting_font_size))])
         graphical_window.hide()
         graphical_window2 = gui.graphical_window(setting_title, graphical_layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
 
-        for i in range(len(mod_res)):
-            graphical_window2['info'].update(str('Copying (' + str(i + 1) + '/' + str(len(mod_res)) + ') ' + str(mod_res[i][0])))
+        for i in range(len(mod_result)):
+            graphical_window2['info'].update(str('Copying (' + str(i + 1) + '/' + str(len(mod_result)) + ') ' + str(mod_result[i][0])))
             graphical_window2['progress_bar'].UpdateBar(i + 1)
-            shutil.copyfile(str(address_mod_list) + str(mod_res[i][1]), str(address_mod_copy) + str(mod_res[i][1]))
+            shutil.copyfile(str(address_mod_list) + str(mod_result[i][1]), str(address_mod_copy) + str(mod_result[i][1]))
             
             event, values = graphical_window2.Read(timeout=10)
 
