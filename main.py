@@ -1,9 +1,10 @@
+import json
+import PySimpleGUI
 import os
 import re
-import json
 import shutil
 import sqlite3
-import PySimpleGUI as gui
+import zlib
 
 # Settings
 # Edition, Version, Revision
@@ -60,11 +61,11 @@ def graphical_interface():
     address_mod_source = address_default + '/AppData/Roaming/Factorio/mods/'
     address_destination = address_default + '/Desktop/Factorio/'
 
-    graphical_layout.append([gui.Text('Mod List Address:', font=(setting_font, setting_font_size))])
-    graphical_layout.append([gui.Input(address_mod_source, key='address_mod_source_folder', font=(setting_font, setting_font_size)), gui.FolderBrowse(target='address_mod_source_folder', initial_folder=address_mod_source, font=(setting_font, setting_font_size))])
-    graphical_layout.append([gui.Text('Target Address:', font=(setting_font, setting_font_size))])
-    graphical_layout.append([gui.Input(address_destination, key='address_destination_folder', font=(setting_font, setting_font_size)), gui.FolderBrowse(target='address_destination_folder', initial_folder=address_destination, font=(setting_font, setting_font_size))])
-    graphical_layout.append([gui.Button('Start Copy', font=(setting_font, setting_font_size))])    
+    graphical_layout.append([PySimpleGUI.Text('Mod List Address:', font=(setting_font, setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Input(address_mod_source, key='address_mod_source_folder', font=(setting_font, setting_font_size)), PySimpleGUI.FolderBrowse(target='address_mod_source_folder', initial_folder=address_mod_source, font=(setting_font, setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Text('Target Address:', font=(setting_font, setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Input(address_destination, key='address_destination_folder', font=(setting_font, setting_font_size)), PySimpleGUI.FolderBrowse(target='address_destination_folder', initial_folder=address_destination, font=(setting_font, setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Button('Start Copy', font=(setting_font, setting_font_size))])    
 
     def copy_mod(address_mod_list, address_mod_copy, graphical_window):
         with open(address_mod_list + 'mod-list.json') as json_file:
@@ -81,7 +82,7 @@ def graphical_interface():
                 mod_list.append(re.sub('[-_ ]', '', mod_list_json[i]['name'].lower()))
 
         if mod_list == ['base']:
-            gui.popup_ok('Mods are not selected in game.', title=setting_title, font=(setting_font, setting_font_size))
+            PySimpleGUI.popup_ok('Mods are not selected in game.', title=setting_title, font=(setting_font, setting_font_size))
             return
 
         mod_file_list = next(os.walk(address_mod_list), (None, None, []))[2]
@@ -99,12 +100,12 @@ def graphical_interface():
             os.mkdir(address_mod_copy, 0o666)
 
         graphical_layout = [[]]
-        graphical_layout.append([gui.Text('Progress:', font=(setting_font, setting_font_size))])
-        graphical_layout.append([gui.Text('', key='info', font=(setting_font, setting_font_size))])
-        graphical_layout.append([gui.ProgressBar(len(mod_result), orientation='h', size=(100, 20), key='progress_bar')])
-        graphical_layout.append([gui.Cancel(font=(setting_font, setting_font_size))])
+        graphical_layout.append([PySimpleGUI.Text('Progress:', font=(setting_font, setting_font_size))])
+        graphical_layout.append([PySimpleGUI.Text('', key='info', font=(setting_font, setting_font_size))])
+        graphical_layout.append([PySimpleGUI.ProgressBar(len(mod_result), orientation='h', size=(100, 20), key='progress_bar')])
+        graphical_layout.append([PySimpleGUI.Cancel(font=(setting_font, setting_font_size))])
         graphical_window.hide()
-        graphical_window2 = gui.Window(setting_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
+        graphical_window2 = PySimpleGUI.Window(setting_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
 
         for i in range(len(mod_result)):
             graphical_window2['info'].update(str('Copying (' + str(i + 1) + '/' + str(len(mod_result)) + ') ' + str(mod_result[i][0])))
@@ -113,19 +114,19 @@ def graphical_interface():
             
             event, values = graphical_window2.Read(timeout=10)
 
-            if event in (None, 'Exit', 'Cancel', gui.WIN_CLOSED): 
+            if event in (None, 'Exit', 'Cancel', PySimpleGUI.WIN_CLOSED): 
                 graphical_window2.close()
                 return
 
-        gui.popup_ok('Tasks have completed successfully.', title=setting_title, font=(setting_font, setting_font_size))
+        PySimpleGUI.popup_ok('Tasks have completed successfully.', title=setting_title, font=(setting_font, setting_font_size))
         graphical_window2.close()
 
-    graphical_window = gui.Window(setting_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
+    graphical_window = PySimpleGUI.Window(setting_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
 
     while True:
         event, values = graphical_window.Read(timeout=100)
 
-        if event in (None, 'Exit', 'Cancel', gui.WIN_CLOSED): 
+        if event in (None, 'Exit', 'Cancel', PySimpleGUI.WIN_CLOSED): 
             graphical_window.close()
             break
 
