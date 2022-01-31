@@ -35,17 +35,8 @@ setting_html_agent_header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64;
 compare mod version.
 
 [2]
-import json file.
-
-[3]
 Switch mod profiles using sqlite or other means.
 Only by switching all to False then those to True.
-
-[4]
-Save the current profile.
-
-[5]
-Import or Export Strings or files.
 '''
 
 # Create Database if inital launch.
