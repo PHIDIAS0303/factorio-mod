@@ -10,8 +10,8 @@ import zlib
 
 # Settings
 # Edition, Version, Revision
-setting_edition = 5
-setting_revision = 2
+setting_edition = 20220131
+setting_revision = 7
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 # Title
 setting_title = 'EXP MOD COPY'
