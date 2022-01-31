@@ -1,4 +1,6 @@
+import base64
 from bs4 import BeautifulSoup
+import datetime
 import json
 import PySimpleGUI
 import os
@@ -11,7 +13,7 @@ import zlib
 # Settings
 # Edition, Version, Revision
 setting_edition = 20220131
-setting_revision = 7
+setting_revision = 8
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 # Title
 setting_title = 'EXP MOD COPY'
@@ -49,11 +51,7 @@ Import or Export Strings or files.
 '''
 string = '1234567890'
 compressed_string = zlib.compress(bytes(string, 'utf-8'), zlib.Z_BEST_COMPRESSION)
-
-print(string)
-print(compressed_string)
 print((zlib.decompress(compressed_string)).decode('utf-8'))
-
 '''
 
 # Create Database if inital launch.
@@ -73,7 +71,7 @@ address_mod_source = address_default + '/AppData/Roaming/Factorio/mods/'
 address_destination = address_default + '/Desktop/Factorio/'
 
 # Main Application
-def interface_event_pack_mod_list(address_mod_source, address_destination, graphical_window_3):
+def interface_event_pack_mod_list(graphical_window_1, address_mod_source, address_destination):
     if not os.path.exists(address_destination):
         os.mkdir(address_destination, 0o666)
 
@@ -84,7 +82,7 @@ def interface_event_pack_mod_list(address_mod_source, address_destination, graph
     mod_list_json = mod_list_json['mods']
     mod_list_json_len = len(mod_list_json)
     mod_list_result = []
-    graphical_window_3['progress_bar'].UpdateBar(0, max=mod_list_json_len)
+    graphical_window_1['progress_bar'].UpdateBar(0, max=mod_list_json_len)
 
     for i in range(mod_list_json_len):
         if (mod_list_json[i]['enabled'] == True):
@@ -94,18 +92,45 @@ def interface_event_pack_mod_list(address_mod_source, address_destination, graph
                 html_soup = BeautifulSoup(html_result, 'html.parser')
                 html_result = json.loads(html_soup.text)
                 mod_list_result.append([html_result['title'], html_result['releases'][-1]['file_name'], html_result['releases'][-1]['download_url'], html_result['releases'][-1]['version'], html_result['releases'][-1]['info_json']['factorio_version']])
-                graphical_window_3['info'].update(str('Loading (' + str(i + 1) + '/' + str(mod_list_json_len) + ') ' + str(html_result['title'])))
-                graphical_window_3['progress_bar'].UpdateBar(i + 1)
+                graphical_window_1['info'].update(str('Loading (' + str(i + 1) + '/' + str(mod_list_json_len) + ') ' + str(html_result['title'])))
+                graphical_window_1['progress_bar'].UpdateBar(i + 1)
     
     mod_list_result_len = len(mod_list_result)
-    graphical_window_3['progress_bar'].UpdateBar(0, max=mod_list_result_len)
+    graphical_window_1['progress_bar'].UpdateBar(0, max=mod_list_result_len)
 
     for i in range(mod_list_result_len):
-        graphical_window_3['info'].update(str('Copying (' + str(i + 1) + '/' + str(mod_list_result_len) + ') ' + str(mod_list_result[i][0])))
-        graphical_window_3['progress_bar'].UpdateBar(i + 1)
+        graphical_window_1['info'].update(str('Copying (' + str(i + 1) + '/' + str(mod_list_result_len) + ') ' + str(mod_list_result[i][0])))
+        graphical_window_1['progress_bar'].UpdateBar(i + 1)
         shutil.copyfile(str(address_mod_source) + str(mod_list_result[i][1]), str(address_destination) + str(mod_list_result[i][1]))
 
     PySimpleGUI.popup_ok('Mod copy completed successfully.', title=setting_title, font=(setting_font, setting_font_size))
+
+def interface_event_export_string(graphical_window_1, address_mod_source, address_destination):
+    with open(address_mod_source + 'mod-list.json') as json_file:
+        mod_list_json = json.load(json_file)
+        json_file.close()
+
+    mod_list_json = mod_list_json['mods']
+    mod_list_json_len = len(mod_list_json)
+    mod_list_result = []
+    graphical_window_1['progress_bar'].UpdateBar(0, max=mod_list_json_len)
+
+    for i in range(mod_list_json_len):
+        if (mod_list_json[i]['enabled'] == True):
+            graphical_window_1['info'].update(str('Loading (' + str(i + 1) + '/' + str(mod_list_json_len) + ') ' + str(mod_list_json[i]['name'])))
+            graphical_window_1['progress_bar'].UpdateBar(i + 1)
+            mod_list_result.append(mod_list_json[i]['name'])
+        
+    mod_list_result = "\n".join(mod_list_result)
+    mod_list_result = zlib.compress(mod_list_result.encode('UTF-8'))
+    mod_list_result = base64.b64encode(mod_list_result)
+    mod_list_result = mod_list_result.decode('UTF-8')
+    datetime_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+
+    with open(str(address_destination) + '/exp_mod_string_export_' + str(datetime_now.strftime('%Y%m%d_%H%M%S')) + '.txt', 'w') as file:
+        file.write(mod_list_result)
+
+    PySimpleGUI.popup_ok('Mod string exported successfully.', title=setting_title, font=(setting_font, setting_font_size))
 
 def graphical_interface():
     PySimpleGUI.set_options(element_padding=(0, 0))
@@ -130,7 +155,7 @@ def graphical_interface():
             graphical_layout_2.append([PySimpleGUI.Input(address_mod_source, key='address_mod_source_folder', font=(setting_font, setting_font_size)), PySimpleGUI.FolderBrowse(target='address_mod_source_folder', initial_folder=address_mod_source, font=(setting_font, setting_font_size))])
             graphical_layout_2.append([PySimpleGUI.Text('Target Address:', font=(setting_font, setting_font_size))])
             graphical_layout_2.append([PySimpleGUI.Input(address_destination, key='address_destination_folder', font=(setting_font, setting_font_size)), PySimpleGUI.FolderBrowse(target='address_destination_folder', initial_folder=address_destination, font=(setting_font, setting_font_size))])
-            graphical_layout_2.append([PySimpleGUI.Button('Start Copy', font=(setting_font, setting_font_size))])
+            graphical_layout_2.append([PySimpleGUI.Button('Start Copy', font=(setting_font, setting_font_size), key='interface_button_event_pack_mod_list')])
             graphical_window.Hide()
             graphical_window_2 = PySimpleGUI.Window(setting_title, layout=graphical_layout_2, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
             
@@ -142,14 +167,45 @@ def graphical_interface():
                     graphical_window.UnHide()
                     break
 
-                elif event in ('Start Copy'):
+                elif event in ('interface_button_event_pack_mod_list'):
                     graphical_layout_3 = [[]]
                     graphical_layout_3.append([PySimpleGUI.Text('Progress:', font=(setting_font, setting_font_size))])
                     graphical_layout_3.append([PySimpleGUI.Text('', key='info', font=(setting_font, setting_font_size))])
                     graphical_layout_3.append([PySimpleGUI.ProgressBar(1, orientation='h', size=(100, 20), key='progress_bar')])
                     graphical_window_2.close()
                     graphical_window_3 = PySimpleGUI.Window(setting_title, layout=graphical_layout_3, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
-                    interface_event_pack_mod_list(str(values['address_mod_source_folder']) + '/', str(values['address_destination_folder']) + '/', graphical_window_3)
+                    interface_event_pack_mod_list(graphical_window_3, str(values['address_mod_source_folder']) + '/', str(values['address_destination_folder']) + '/')
+                    graphical_window_3.close()
+                    graphical_window.UnHide()
+                    break
+
+        elif event in ('Export String'):
+            graphical_layout_2 = [[]]
+            graphical_layout_2.append([PySimpleGUI.Menu(menu_layout)])
+            graphical_layout_2.append([PySimpleGUI.Text('Mod List Address:', font=(setting_font, setting_font_size))])
+            graphical_layout_2.append([PySimpleGUI.Input(address_mod_source, key='address_mod_source_folder', font=(setting_font, setting_font_size)), PySimpleGUI.FolderBrowse(target='address_mod_source_folder', initial_folder=address_mod_source, font=(setting_font, setting_font_size))])
+            graphical_layout_2.append([PySimpleGUI.Text('Target Address:', font=(setting_font, setting_font_size))])
+            graphical_layout_2.append([PySimpleGUI.Input(address_destination, key='address_destination_folder', font=(setting_font, setting_font_size)), PySimpleGUI.FolderBrowse(target='address_destination_folder', initial_folder=address_destination, font=(setting_font, setting_font_size))])
+            graphical_layout_2.append([PySimpleGUI.Button('Export String', font=(setting_font, setting_font_size), key='interface_button_event_export_string')])
+            graphical_window.Hide()
+            graphical_window_2 = PySimpleGUI.Window(setting_title, layout=graphical_layout_2, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
+            
+            while True:
+                event, values = graphical_window_2.Read(timeout=100)
+                
+                if event in (None, 'Exit', 'Cancel', PySimpleGUI.WIN_CLOSED): 
+                    graphical_window_2.close()
+                    graphical_window.UnHide()
+                    break
+
+                elif event in ('interface_button_event_export_string'):
+                    graphical_layout_3 = [[]]
+                    graphical_layout_3.append([PySimpleGUI.Text('Progress:', font=(setting_font, setting_font_size))])
+                    graphical_layout_3.append([PySimpleGUI.Text('', key='info', font=(setting_font, setting_font_size))])
+                    graphical_layout_3.append([PySimpleGUI.ProgressBar(1, orientation='h', size=(100, 20), key='progress_bar')])
+                    graphical_window_2.close()
+                    graphical_window_3 = PySimpleGUI.Window(setting_title, layout=graphical_layout_3, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
+                    interface_event_export_string(graphical_window_3, str(values['address_mod_source_folder']) + '/',  str(values['address_destination_folder']) + '/')
                     graphical_window_3.close()
                     graphical_window.UnHide()
                     break
