@@ -1,15 +1,17 @@
+from bs4 import BeautifulSoup
 import json
 import PySimpleGUI
 import os
 import re
 import shutil
 import sqlite3
+import urllib.request
 import zlib
 
 # Settings
 # Edition, Version, Revision
-setting_edition = 4
-setting_revision = 5
+setting_edition = 5
+setting_revision = 1
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 # Title
 setting_title = 'EXP MOD COPY'
@@ -22,6 +24,8 @@ setting_font_size = 14
 setting_window_size = [650, 250]
 # Database Filename
 setting_app_database = 'main.db'
+# Setting HTML Agent Header
+setting_html_agent_header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'}
 
 # TODO List
 '''
@@ -63,74 +67,47 @@ with sqlite3.connect(setting_app_database) as setting_app_database_connection:
 
     setting_app_database_connection.commit()
 
+address_default = os.path.expanduser('~')
+address_default = address_default.replace('\\', '/')
+address_mod_source = address_default + '/AppData/Roaming/Factorio/mods/'
+address_destination = address_default + '/Desktop/Factorio/'
+
 # Main Application
-def graphical_interface():
-    graphical_layout = [[]]
-    address_default = os.path.expanduser('~')
-    address_default = address_default.replace('\\', '/')
-    address_mod_source = address_default + '/AppData/Roaming/Factorio/mods/'
-    address_destination = address_default + '/Desktop/Factorio/'
+def mod_list(address_mod_source):
+    with open(address_mod_source + 'mod-list.json') as json_file:
+        mod_list_json = json.load(json_file)
+        json_file.close()
 
-    graphical_layout.append([PySimpleGUI.Text('Mod List Address:', font=(setting_font, setting_font_size))])
-    graphical_layout.append([PySimpleGUI.Input(address_mod_source, key='address_mod_source_folder', font=(setting_font, setting_font_size)), PySimpleGUI.FolderBrowse(target='address_mod_source_folder', initial_folder=address_mod_source, font=(setting_font, setting_font_size))])
-    graphical_layout.append([PySimpleGUI.Text('Target Address:', font=(setting_font, setting_font_size))])
-    graphical_layout.append([PySimpleGUI.Input(address_destination, key='address_destination_folder', font=(setting_font, setting_font_size)), PySimpleGUI.FolderBrowse(target='address_destination_folder', initial_folder=address_destination, font=(setting_font, setting_font_size))])
-    graphical_layout.append([PySimpleGUI.Button('Start Copy', font=(setting_font, setting_font_size))])    
+    mod_list_json = mod_list_json['mods']
+    mod_list_result = []
 
-    def copy_mod(address_mod_list, address_mod_copy, graphical_window):
-        with open(address_mod_list + 'mod-list.json') as json_file:
-            mod_list_json = json.load(json_file)
-            json_file.close()
-
-        mod_list_json = mod_list_json['mods']
-
-        mod_list = []
-        mod_result = []
-
-        for i in range(len(mod_list_json)):
-            if mod_list_json[i]['enabled'] == True:
-                mod_list.append(re.sub('[-_ ]', '', mod_list_json[i]['name'].lower()))
-
-        if mod_list == ['base']:
-            PySimpleGUI.popup_ok('Mods are not selected in game.', title=setting_title, font=(setting_font, setting_font_size))
-            return
-
-        mod_file_list = next(os.walk(address_mod_list), (None, None, []))[2]
-        mod_file_list_compare = []
-
-        for i in range(len(mod_file_list)):
-            mod_file_list_compare.append(re.sub('[-_.\s\d]', '', mod_file_list[i].replace('.zip', '').lower()))
-
-        for i in range(len(mod_list)):
-            for j in range(len(mod_file_list_compare)):
-                if re.search(str('^.*(' + str(mod_list[i]) + ').*$'), str(mod_file_list_compare[j])):
-                    mod_result.append([mod_list[i], mod_file_list[j]])
-
-        if not os.path.exists(address_mod_copy):
-            os.mkdir(address_mod_copy, 0o666)
-
-        graphical_layout = [[]]
-        graphical_layout.append([PySimpleGUI.Text('Progress:', font=(setting_font, setting_font_size))])
-        graphical_layout.append([PySimpleGUI.Text('', key='info', font=(setting_font, setting_font_size))])
-        graphical_layout.append([PySimpleGUI.ProgressBar(len(mod_result), orientation='h', size=(100, 20), key='progress_bar')])
-        graphical_layout.append([PySimpleGUI.Cancel(font=(setting_font, setting_font_size))])
-        graphical_window.hide()
-        graphical_window2 = PySimpleGUI.Window(setting_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
-
-        for i in range(len(mod_result)):
-            graphical_window2['info'].update(str('Copying (' + str(i + 1) + '/' + str(len(mod_result)) + ') ' + str(mod_result[i][0])))
-            graphical_window2['progress_bar'].UpdateBar(i + 1)
-            # shutil.copyfile(str(address_mod_list) + str(mod_result[i][1]), str(address_mod_copy) + str(mod_result[i][1]))
+    for i in range(len(mod_list_json)):
+        if (mod_list_json[i]['enabled'] == True):
+            if not (mod_list_json[i]['name'] == 'base'):
+                print('Looking up (' + str(i + 1) + '/' + str(len(mod_list_json)) + ') ' + str(mod_list_json[i]['name']))
+                html_page = urllib.request.Request('https://mods.factorio.com/api/mods/' + str(mod_list_json[i]['name']).replace(' ', '%20'), headers=setting_html_agent_header)
+                html_result = urllib.request.urlopen(html_page).read().decode('utf-8')
             
-            event, values = graphical_window2.Read(timeout=10)
+                html_soup = BeautifulSoup(html_result, 'html.parser')
+                html_result = json.loads(html_soup.text)
+                mod_list_result.append([html_result['title'], html_result['releases'][-1]['file_name'], html_result['releases'][-1]['download_url'], html_result['releases'][-1]['version'], html_result['releases'][-1]['info_json']['factorio_version']])
 
-            if event in (None, 'Exit', 'Cancel', PySimpleGUI.WIN_CLOSED): 
-                graphical_window2.close()
-                return
+    return mod_list_result
 
-        PySimpleGUI.popup_ok('Tasks have completed successfully.', title=setting_title, font=(setting_font, setting_font_size))
-        graphical_window2.close()
+def interface_event_pack_mod_list(address_mod_source, address_destination, mod_list_result):
+    if not os.path.exists(address_destination):
+        os.mkdir(address_destination, 0o666)
 
+    for i in range(len(mod_list_result)):
+        print('Copying (' + str(i + 1) + '/' + str(len(mod_list_result)) + ') ' + str(mod_list_result[i][0]))
+        shutil.copyfile(str(address_mod_source) + str(mod_list_result[i][1]), str(address_destination) + str(mod_list_result[i][1]))
+
+def graphical_interface():
+    PySimpleGUI.set_options(element_padding=(0, 0))
+    graphical_layout = [[]]
+    menu_layout = [['File', ['Pack Mod List', 'Export String', 'Import String', 'Import JSON']], ['Profile', ['Load Profile', 'Save Profile']]]
+
+    graphical_layout.append([PySimpleGUI.Menu(menu_layout, )])
     graphical_window = PySimpleGUI.Window(setting_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), resizable=False, finalize=True)
 
     while True:
@@ -139,10 +116,7 @@ def graphical_interface():
         if event in (None, 'Exit', 'Cancel', PySimpleGUI.WIN_CLOSED): 
             graphical_window.close()
             break
-
-        elif event in ('Start Copy'):
-            copy_mod(str(values['address_mod_source_folder']) + '/', str(values['address_destination_folder'])+ '/', graphical_window)
-            graphical_window.close()
-            break
+        elif event in ('Pack Mod List'):
+            interface_event_pack_mod_list(address_mod_source, address_destination, mod_list(address_mod_source))
 
 graphical_interface()
