@@ -4,7 +4,6 @@ import datetime
 import json
 import PySimpleGUI
 import os
-import re
 import shutil
 import sqlite3
 import urllib.request
@@ -13,7 +12,7 @@ import zlib
 # Settings
 # Edition, Version, Revision
 setting_edition = 20220201
-setting_revision = 2
+setting_revision = 3
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 # Title
 setting_title = 'EXP MOD COPY'
