@@ -12,7 +12,7 @@ import zlib
 # Settings
 # Edition, Version, Revision
 setting_edition = 20220201
-setting_revision = 3
+setting_revision = 4
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 # Title
 setting_title = 'EXP MOD COPY'
@@ -76,8 +76,9 @@ def interface_event_pack_mod_list(graphical_window_1, address_mod_source, addres
                 html_soup = BeautifulSoup(html_result, 'html.parser')
                 html_result = json.loads(html_soup.text)
                 mod_list_result.append([html_result['title'], html_result['releases'][-1]['file_name'], html_result['releases'][-1]['download_url'], html_result['releases'][-1]['version'], html_result['releases'][-1]['info_json']['factorio_version']])
-                graphical_window_1['info'].update(str('Loading (' + str(i + 1) + '/' + str(mod_list_json_len) + ') ' + str(html_result['title'])))
-                graphical_window_1['progress_bar'].UpdateBar(i + 1)
+        
+        graphical_window_1['info'].update(str('Loading (' + str(i + 1) + '/' + str(mod_list_json_len) + ') ' + str(html_result['title'])))
+        graphical_window_1['progress_bar'].UpdateBar(i + 1)
     
     mod_list_result_len = len(mod_list_result)
     graphical_window_1['progress_bar'].UpdateBar(0, max=mod_list_result_len)
