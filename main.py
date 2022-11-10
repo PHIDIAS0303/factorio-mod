@@ -88,9 +88,19 @@ def standard_case(string):
 
         return ' '.join(string)
 
+
 def graphical_interface_main():
     graphical_layout = []
-    graphical_layout.append([PySimpleGUI.Menu([['MAIN', ['EXPORT']]])])
+    graphical_layout.append([PySimpleGUI.Text(text=get_time(), key='text_clock', relief=PySimpleGUI.RELIEF_RIDGE, size=(18, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
+    graphical_window = PySimpleGUI.Window(title=setting_app_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), location=(int((setting_resolution[0] - setting_window_size[0]) / 2), int((setting_resolution[1] - setting_window_size[1] - 80) / 2)), resizable=False, finalize=True)
 
-    
+    while True:
+        event, values = graphical_window.Read(timeout=100)
+        graphical_window['text_clock'].update(value=get_time())
+
+        if event in (None, 'Exit', 'Cancel', PySimpleGUI.WIN_CLOSED):
+            graphical_window.close()
+            break
+
+
 graphical_interface_main()
