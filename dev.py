@@ -1,11 +1,18 @@
 import base64
 from bs4 import BeautifulSoup
+from Crypto.Cipher import AES, ChaCha20_Poly1305, PKCS1_OAEP
+from Crypto.PublicKey import RSA
+from Crypto.Random import get_random_bytes
 import datetime
+import errno
+import hashlib
 import json
-import PySimpleGUI
+import math
 import os
+import PySimpleGUI
 import shutil
-import sqlite3
+import socket
+import time
 import urllib.request
 import zlib
 
@@ -48,17 +55,6 @@ Switch mod profiles using sqlite or other means.
 Only by switching all to False then those to True.
 '''
 
-# Create Database if inital launch.
-with sqlite3.connect(setting_app_database) as setting_app_database_connection:
-    setting_app_database_cursor = setting_app_database_connection.cursor()
-
-    try:
-        setting_app_database_cursor.execute('CREATE TABLE profile (id INTEGER, data TEXT)')
-    except sqlite3.OperationalError:
-        pass
-
-    setting_app_database_connection.commit()
-
 address_default = os.path.expanduser('~')
 address_default = address_default.replace('\\', '/')
 address_mod_source = address_default + '/AppData/Roaming/Factorio/mods/'
@@ -86,8 +82,16 @@ def interface_event_pack_mod_list(graphical_window_1, address_mod_source, addres
                 html_result = urllib.request.urlopen(html_page).read().decode('utf-8')
                 html_soup = BeautifulSoup(html_result, 'html.parser')
                 html_result = json.loads(html_soup.text)
-                print(html_result)
-                mod_list_result.append([html_result['title'], html_result['releases'][-1]['file_name'], html_result['releases'][-1]['download_url'], html_result['releases'][-1]['version'], html_result['releases'][-1]['info_json']['factorio_version']])
+                mod_selection = []
+
+                for i in range(len(html_result['releases'])):
+                    if html_result['releases'][i]['info_json']['factorio_version'] == '1.1':
+                        html_result['releases'][i]['released_at'] = html_result['releases'][i]['released_at'].replace('T', ' ').replace('Z', '')
+                        mod_selection.append(html_result['releases'][i])
+
+                mod_selection = sorted(mod_selection, key=lambda x: (time.mktime(datetime.datetime.strptime(x['released_at'], '%Y-%m-%d %H:%M:%S.%f').timetuple())), reverse=True)[0]
+
+                mod_list_result.append([html_result['title'], mod_selection['file_name'], mod_selection['download_url'], mod_selection['version'], mod_selection['info_json']['factorio_version']])
 
                 graphical_window_1['info'].update(str('Loading (' + str(i + 1) + '/' + str(mod_list_json_len) + ') ' + str(html_result['title'])))
                 graphical_window_1['progress_bar'].UpdateBar(i + 1)
