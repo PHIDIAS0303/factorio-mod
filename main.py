@@ -43,3 +43,54 @@ setting_html_agent_header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64;
 PySimpleGUI.LOOK_AND_FEEL_TABLE['CustomTheme'] = {'BACKGROUND': setting_color[0], 'TEXT': setting_color[2], 'INPUT': setting_color[0], 'TEXT_INPUT': setting_color[2], 'SCROLL': setting_color[1], 'BUTTON': (setting_color[1], setting_color[0]), 'PROGRESS': (setting_color[1], setting_color[0]), 'BORDER': 1, 'SLIDER_DEPTH': 0, 'PROGRESS_DEPTH': 0, }
 PySimpleGUI.theme('CustomTheme')
 
+setting_address_mod_default = os.path.expanduser('~')
+setting_address_mod_default = setting_address_mod_default.replace('\\', '/')
+setting_address_mod_source = setting_address_mod_default + '/AppData/Roaming/Factorio/mods/'
+setting_address_mod_destination = setting_address_mod_default + '/Desktop/Factorio/'
+
+def get_time():
+    return str((datetime.datetime.utcnow() + datetime.timedelta(hours=setting_app_timezone)).strftime('%Y-%m-%d %H:%M:%S'))
+
+
+def pprint(level, debug, message):
+    level = level.upper()
+
+    if debug:
+        if level == 'DEBUG':
+            print('\x1b[38;21m' + str(message) + '\x1b[0m')
+
+        if level == 'INFO':
+            print('\x1b[38;21m' + str(message) + '\x1b[0m')
+
+        elif level == 'WARN':
+            print('\x1b[33;21m' + str(message) + '\x1b[0m')
+
+        elif level == 'ERROR' or level == 'CRITICAL':
+            print('\x1b[31;21m' + str(message) + '\x1b[0m')
+
+
+def standard_case(string):
+    if (string is None) or string == '':
+        return string
+
+    else:
+        string = string.lower()
+        string = string.split(' ')
+
+        for i in range(len(string)):
+            string[i] = list(string[i])
+            string[i][0] = string[i][0].upper()
+
+            if '-' in string[i]:
+                string[i][string[i].index('-') + 1] = string[i][string[i].index('-') + 1].upper()
+
+            string[i] = ''.join(string[i])
+
+        return ' '.join(string)
+
+def graphical_interface_main():
+    graphical_layout = []
+    graphical_layout.append([PySimpleGUI.Menu([['MAIN', ['EXPORT']]])])
+
+    
+graphical_interface_main()
