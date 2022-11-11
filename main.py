@@ -1,8 +1,5 @@
 import base64
 from bs4 import BeautifulSoup
-from Crypto.Cipher import AES, ChaCha20_Poly1305, PKCS1_OAEP
-from Crypto.PublicKey import RSA
-from Crypto.Random import get_random_bytes
 import datetime
 import errno
 import hashlib
@@ -20,7 +17,7 @@ import zlib
 setting_app_title = 'APERX MOD COPY'
 # Settings
 # Edition, Version, Revision
-setting_edition = 20221110
+setting_edition = 20221112
 setting_revision = 1
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 setting_app_title = setting_app_title + ' ' + setting_version
@@ -99,6 +96,18 @@ def standard_case(string):
 def graphical_interface_main():
     graphical_layout = []
     graphical_layout.append([PySimpleGUI.Text(text=get_time(), key='text_clock', relief=PySimpleGUI.RELIEF_RIDGE, size=(18, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Text(text='', size=(20, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Text('Mod List Address:', font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Input(setting_address_mod_source, key='address_mod_source_folder', font=(setting_font[0], setting_font_size)), PySimpleGUI.FolderBrowse(target='address_mod_source_folder', initial_folder=setting_address_mod_source, font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Text('Target Address:', font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Input(setting_address_mod_destination, key='address_mod_destination_folder', font=(setting_font[0], setting_font_size)), PySimpleGUI.FolderBrowse(target='address_destination_folder', initial_folder=setting_address_mod_destination, font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Button('Start Copy', font=(setting_font[0], setting_font_size), key='interface_event_copy_mod_list')])
+    graphical_layout.append([PySimpleGUI.Text(text='', size=(20, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Text(text='Progress', size=(40, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Text(text='', size=(20, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Text(text='', size=(60, 1), key='interface_text_progress_info', pad=(0, 0), font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.ProgressBar(max_value=1, orientation='h', size=(60, 20), key='interface_progress_bar')])
+    graphical_layout.append([PySimpleGUI.Text(text='', size=(20, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
     graphical_window = PySimpleGUI.Window(title=setting_app_title, layout=graphical_layout, size=(setting_window_size[0], setting_window_size[1]), location=(int((setting_resolution[0] - setting_window_size[0]) / 2), int((setting_resolution[1] - setting_window_size[1] - 80) / 2)), resizable=False, finalize=True)
 
     while True:
@@ -108,6 +117,49 @@ def graphical_interface_main():
         if event in (None, 'Exit', 'Cancel', PySimpleGUI.WIN_CLOSED):
             graphical_window.close()
             break
+
+        elif event in 'interface_event_copy_mod_list':
+            if not os.path.exists(values['address_mod_destination_folder']):
+                os.mkdir(values['address_mod_destination_folder'], 0o666)
+
+            with open(values['address_mod_source_folder'] + 'mod-list.json') as json_file:
+                mod_list_json = json.load(json_file)
+                json_file.close()
+
+            mod_list_json = mod_list_json['mods']
+            mod_list_len = len(mod_list_json)
+            mod_list_len_en = 0
+            mod_list_cnt_en = 0
+
+            for i in range(mod_list_len):
+                if mod_list_json[i]['enabled']:
+                    mod_list_len_en = mod_list_len_en + 1
+
+            graphical_window['interface_progress_bar'].UpdateBar(0, max=mod_list_len_en)
+
+            for i in range(mod_list_len):
+                if mod_list_json[i]['enabled']:
+                    if not (mod_list_json[i]['name'] == 'base'):
+                        html_page = urllib.request.Request('https://mods.factorio.com/api/mods/' + str(mod_list_json[i]['name']).replace(' ', '%20'), headers=setting_html_agent_header)
+                        html_result = urllib.request.urlopen(html_page).read().decode('utf-8')
+                        html_soup = BeautifulSoup(html_result, 'html.parser')
+                        html_result = json.loads(html_soup.text)
+                        mod_selection = []
+
+                        for i in range(len(html_result['releases'])):
+                            if html_result['releases'][i]['info_json']['factorio_version'] == '1.1':
+                                html_result['releases'][i]['released_at'] = html_result['releases'][i]['released_at'].replace('T', ' ').replace('Z', '')
+                                mod_selection.append(html_result['releases'][i])
+
+                        mod_selection = sorted(mod_selection, key=lambda x: (time.mktime(datetime.datetime.strptime(x['released_at'], '%Y-%m-%d %H:%M:%S.%f').timetuple())), reverse=True)[0]
+
+                        shutil.copyfile(str(values['address_mod_source_folder']) + str(mod_selection['file_name']), str(values['address_mod_destination_folder']) + str(mod_selection['file_name']))
+                        mod_list_cnt_en = mod_list_cnt_en + 1
+
+                        graphical_window['interface_text_progress_info'].update(str(mod_list_cnt_en) + ' / ' + str(mod_list_len_en) + ' - ' + str(html_result['title']))
+                        graphical_window['interface_progress_bar'].UpdateBar(mod_list_cnt_en)
+
+            graphical_window['interface_text_progress_info'].update('COMPLETED')
 
 
 graphical_interface_main()
