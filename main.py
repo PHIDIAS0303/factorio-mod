@@ -100,7 +100,7 @@ def graphical_interface_main():
     graphical_layout.append([PySimpleGUI.Text('Mod List Address:', font=(setting_font[0], setting_font_size))])
     graphical_layout.append([PySimpleGUI.Input(setting_address_mod_source, key='address_mod_source_folder', font=(setting_font[0], setting_font_size)), PySimpleGUI.FolderBrowse(target='address_mod_source_folder', initial_folder=setting_address_mod_source, font=(setting_font[0], setting_font_size))])
     graphical_layout.append([PySimpleGUI.Text('Target Address:', font=(setting_font[0], setting_font_size))])
-    graphical_layout.append([PySimpleGUI.Input(setting_address_mod_destination, key='address_mod_destination_folder', font=(setting_font[0], setting_font_size)), PySimpleGUI.FolderBrowse(target='address_destination_folder', initial_folder=setting_address_mod_destination, font=(setting_font[0], setting_font_size))])
+    graphical_layout.append([PySimpleGUI.Input(setting_address_mod_destination, key='address_mod_destination_folder', font=(setting_font[0], setting_font_size)), PySimpleGUI.FolderBrowse(target='address_mod_destination_folder', initial_folder=setting_address_mod_destination, font=(setting_font[0], setting_font_size))])
     graphical_layout.append([PySimpleGUI.Button('Start Copy', font=(setting_font[0], setting_font_size), key='interface_event_copy_mod_list')])
     graphical_layout.append([PySimpleGUI.Text(text='', size=(20, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
     graphical_layout.append([PySimpleGUI.Text(text='Progress', size=(40, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
