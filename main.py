@@ -21,7 +21,7 @@ setting_app_title = 'APERX MOD COPY'
 # Settings
 # Edition, Version, Revision
 setting_edition = 20221112
-setting_revision = 1
+setting_revision = 2
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 setting_app_title = setting_app_title + ' ' + setting_version
 # Timezone
@@ -163,7 +163,7 @@ def graphical_interface_main():
                 mod_selection = factorio_mod_lookup(mod_list_en[i]['name'])
                 shutil.copyfile(str(values['address_mod_source_folder']) + str(mod_selection['file_name']), str(values['address_mod_destination_folder']) + str(mod_selection['file_name']))
 
-                graphical_window['interface_text_progress_info'].update(str(i) + ' / ' + str(mod_list_en) + ' - ' + str(mod_selection['title']))
+                graphical_window['interface_text_progress_info'].update(str(i) + ' / ' + str(len(mod_list_en)) + ' - ' + str(mod_selection['title']))
                 graphical_window['interface_progress_bar'].UpdateBar(i)
 
             graphical_window['interface_text_progress_info'].update('COMPLETED')
