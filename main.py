@@ -149,15 +149,18 @@ def graphical_interface_main():
             mod_list_len = len(mod_list_json)
             mod_list_len_en = 0
             mod_list_cnt_en = 0
+            mod_list_en = []
 
             for i in range(mod_list_len):
                 if mod_list_json[i]['enabled']:
-                    mod_list_len_en = mod_list_len_en + 1
+                    if not (mod_list_json[i]['name'] == 'base'):
+                        mod_list_en.append(mod_list_json[i])
+                        mod_list_len_en = mod_list_len_en + 1
 
             graphical_window['interface_progress_bar'].UpdateBar(0, max=mod_list_len_en)
 
-            for i in range(mod_list_len):
-                if mod_list_json[i]['enabled']:
+            for i in range(len(mod_list_en)):
+
                     if not (mod_list_json[i]['name'] == 'base'):
                         mod_selection = factorio_mod_lookup(mod_list_json[i]['name'])
                         shutil.copyfile(str(values['address_mod_source_folder']) + str(mod_selection['file_name']), str(values['address_mod_destination_folder']) + str(mod_selection['file_name']))
