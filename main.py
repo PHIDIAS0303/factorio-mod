@@ -1,17 +1,20 @@
 import base64
 from bs4 import BeautifulSoup
 import datetime
-import errno
-import hashlib
 import json
 import math
 import os
 import PySimpleGUI
 import shutil
-import socket
 import time
 import urllib.request
+
+'''
+import errno
+import hashlib
+import socket
 import zlib
+'''
 
 # Title
 setting_app_title = 'APERX MOD COPY'
