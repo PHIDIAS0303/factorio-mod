@@ -109,7 +109,10 @@ def factorio_mod_lookup(mod_name: str):
             html_result['releases'][i]['released_at'] = html_result['releases'][i]['released_at'].replace('T', ' ').replace('Z', '')
             mod_selection.append(html_result['releases'][i])
 
-    return sorted(mod_selection, key=lambda x: (time.mktime(datetime.datetime.strptime(x['released_at'], '%Y-%m-%d %H:%M:%S.%f').timetuple())), reverse=True)[0]
+    mod_selection = sorted(mod_selection, key=lambda x: (time.mktime(datetime.datetime.strptime(x['released_at'], '%Y-%m-%d %H:%M:%S.%f').timetuple())), reverse=True)[0]
+    mod_selection['title'] = html_result['title']
+    mod_selection['summary'] = html_result['summary']
+    return mod_selection
 
 
 def graphical_interface_main():
@@ -147,27 +150,21 @@ def graphical_interface_main():
 
             mod_list_json = mod_list_json['mods']
             mod_list_len = len(mod_list_json)
-            mod_list_len_en = 0
-            mod_list_cnt_en = 0
             mod_list_en = []
 
             for i in range(mod_list_len):
                 if mod_list_json[i]['enabled']:
                     if not (mod_list_json[i]['name'] == 'base'):
                         mod_list_en.append(mod_list_json[i])
-                        mod_list_len_en = mod_list_len_en + 1
 
-            graphical_window['interface_progress_bar'].UpdateBar(0, max=mod_list_len_en)
+            graphical_window['interface_progress_bar'].UpdateBar(0, max=len(mod_list_en))
 
             for i in range(len(mod_list_en)):
+                mod_selection = factorio_mod_lookup(mod_list_en[i]['name'])
+                shutil.copyfile(str(values['address_mod_source_folder']) + str(mod_selection['file_name']), str(values['address_mod_destination_folder']) + str(mod_selection['file_name']))
 
-                    if not (mod_list_json[i]['name'] == 'base'):
-                        mod_selection = factorio_mod_lookup(mod_list_json[i]['name'])
-                        shutil.copyfile(str(values['address_mod_source_folder']) + str(mod_selection['file_name']), str(values['address_mod_destination_folder']) + str(mod_selection['file_name']))
-                        mod_list_cnt_en = mod_list_cnt_en + 1
-
-                        graphical_window['interface_text_progress_info'].update(str(mod_list_cnt_en) + ' / ' + str(mod_list_len_en) + ' - ' + str(html_result['title']))
-                        graphical_window['interface_progress_bar'].UpdateBar(mod_list_cnt_en)
+                graphical_window['interface_text_progress_info'].update(str(i) + ' / ' + str(mod_list_en) + ' - ' + str(mod_selection['title']))
+                graphical_window['interface_progress_bar'].UpdateBar(i)
 
             graphical_window['interface_text_progress_info'].update('COMPLETED')
 
