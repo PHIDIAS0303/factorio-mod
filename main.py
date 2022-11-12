@@ -35,6 +35,8 @@ setting_command_prefix = ['.', '!', '/']
 setting_font = ['BIZ UDPGothic', 'Microsoft JhengHei']
 # Font Size
 setting_font_size = 14
+# Factorio Version
+setting_factorio_version = '1.1'
 # graphical_window Size
 setting_window_size = [1440, 810]
 # Resolution (Primary Screen)
@@ -44,8 +46,6 @@ setting_resolution = (1920, 1080)
 # Color
 # Background
 setting_color = ['#222831', '#14FFEC', '#FF9F1C']
-# Setting HTML Agent Header
-setting_html_agent_header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'}
 
 PySimpleGUI.LOOK_AND_FEEL_TABLE['CustomTheme'] = {'BACKGROUND': setting_color[0], 'TEXT': setting_color[2], 'INPUT': setting_color[0], 'TEXT_INPUT': setting_color[2], 'SCROLL': setting_color[1], 'BUTTON': (setting_color[1], setting_color[0]), 'PROGRESS': (setting_color[1], setting_color[0]), 'BORDER': 1, 'SLIDER_DEPTH': 0, 'PROGRESS_DEPTH': 0, }
 PySimpleGUI.theme('CustomTheme')
@@ -96,6 +96,22 @@ def standard_case(string):
         return ' '.join(string)
 
 
+def factorio_mod_lookup(mod_name: str):
+    setting_html_agent_header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'}
+    html_page = urllib.request.Request('https://mods.factorio.com/api/mods/' + mod_name.replace(' ', '%20'), headers=setting_html_agent_header)
+    html_result = urllib.request.urlopen(html_page).read().decode('utf-8')
+    html_soup = BeautifulSoup(html_result, 'html.parser')
+    html_result = json.loads(html_soup.text)
+    mod_selection = []
+
+    for i in range(len(html_result['releases'])):
+        if html_result['releases'][i]['info_json']['factorio_version'] == setting_factorio_version:
+            html_result['releases'][i]['released_at'] = html_result['releases'][i]['released_at'].replace('T', ' ').replace('Z', '')
+            mod_selection.append(html_result['releases'][i])
+
+    return sorted(mod_selection, key=lambda x: (time.mktime(datetime.datetime.strptime(x['released_at'], '%Y-%m-%d %H:%M:%S.%f').timetuple())), reverse=True)[0]
+
+
 def graphical_interface_main():
     graphical_layout = []
     graphical_layout.append([PySimpleGUI.Text(text=get_time(), key='text_clock', relief=PySimpleGUI.RELIEF_RIDGE, size=(18, 1), pad=(0, 0), font=(setting_font[0], setting_font_size))])
@@ -143,19 +159,7 @@ def graphical_interface_main():
             for i in range(mod_list_len):
                 if mod_list_json[i]['enabled']:
                     if not (mod_list_json[i]['name'] == 'base'):
-                        html_page = urllib.request.Request('https://mods.factorio.com/api/mods/' + str(mod_list_json[i]['name']).replace(' ', '%20'), headers=setting_html_agent_header)
-                        html_result = urllib.request.urlopen(html_page).read().decode('utf-8')
-                        html_soup = BeautifulSoup(html_result, 'html.parser')
-                        html_result = json.loads(html_soup.text)
-                        mod_selection = []
-
-                        for i in range(len(html_result['releases'])):
-                            if html_result['releases'][i]['info_json']['factorio_version'] == '1.1':
-                                html_result['releases'][i]['released_at'] = html_result['releases'][i]['released_at'].replace('T', ' ').replace('Z', '')
-                                mod_selection.append(html_result['releases'][i])
-
-                        mod_selection = sorted(mod_selection, key=lambda x: (time.mktime(datetime.datetime.strptime(x['released_at'], '%Y-%m-%d %H:%M:%S.%f').timetuple())), reverse=True)[0]
-
+                        mod_selection = factorio_mod_lookup(mod_list_json[i]['name'])
                         shutil.copyfile(str(values['address_mod_source_folder']) + str(mod_selection['file_name']), str(values['address_mod_destination_folder']) + str(mod_selection['file_name']))
                         mod_list_cnt_en = mod_list_cnt_en + 1
 
