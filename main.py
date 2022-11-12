@@ -5,6 +5,7 @@ import json
 import math
 import os
 import PySimpleGUI
+import requests
 import shutil
 import time
 import urllib.request
@@ -161,9 +162,17 @@ def graphical_interface_main():
 
             for i in range(len(mod_list_en)):
                 mod_selection = factorio_mod_lookup(mod_list_en[i]['name'])
+
+                if not os.path.exists(str(values['address_mod_source_folder']) + str(mod_selection['file_name'])):
+                    r = requests.get('https://mods.factorio.com' + str(mod_selection['download_url']), stream=True)
+
+                    with open(str(values['address_mod_source_folder']) + str(mod_selection['file_name']), 'wb') as fd:
+                        for chunk in r.iter_content(chunk_size=128):
+                            fd.write(chunk)
+
                 shutil.copyfile(str(values['address_mod_source_folder']) + str(mod_selection['file_name']), str(values['address_mod_destination_folder']) + str(mod_selection['file_name']))
 
-                graphical_window['interface_text_progress_info'].update(str(i) + ' / ' + str(len(mod_list_en)) + ' - ' + str(mod_selection['title']))
+                graphical_window['interface_text_progress_info'].update(str(i) + ' / ' + str(len(mod_list_en)) + ' - (' + '{:,.1f}'.format(float(i / len(mod_list_en))) + ' %)' + str(mod_selection['title']))
                 graphical_window['interface_progress_bar'].UpdateBar(i)
 
             graphical_window['interface_text_progress_info'].update('COMPLETED')
