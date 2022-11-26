@@ -21,8 +21,8 @@ import zlib
 setting_app_title = 'APERX MOD COPY'
 # Settings
 # Edition, Version, Revision
-setting_edition = 20221112
-setting_revision = 2
+setting_edition = 20221127
+setting_revision = 1
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 setting_app_title = setting_app_title + ' ' + setting_version
 # Timezone
