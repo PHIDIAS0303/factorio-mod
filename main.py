@@ -155,9 +155,9 @@ def graphical_interface_main():
 
             for i in range(mod_list_len):
                 if mod_list_json[i]['enabled']:
-                    if not (mod_list_json[i]['name'] == 'base'):
-                        mod_list_en.append(mod_list_json[i])
+                    mod_list_en.append(mod_list_json[i])
 
+            mod_list_en.remove('base')
             graphical_window['interface_progress_bar'].UpdateBar(0, max=len(mod_list_en))
 
             for i in range(len(mod_list_en)):
@@ -175,6 +175,7 @@ def graphical_interface_main():
                 graphical_window['interface_text_progress_info'].update(str(i) + ' / ' + str(len(mod_list_en)) + ' - (' + '{:,.1f}'.format(float(i / len(mod_list_en))) + ' %)' + str(mod_selection['title']))
                 graphical_window['interface_progress_bar'].UpdateBar(i)
 
+            shutil.copyfile(str(values['address_mod_source_folder']) + str('mod-settings.dat'), str(values['address_mod_destination_folder']) + str('mod-settings.dat'))
             graphical_window['interface_text_progress_info'].update('COMPLETED')
 
 
