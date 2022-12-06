@@ -21,8 +21,8 @@ import zlib
 setting_app_title = 'APERX MOD COPY'
 # Settings
 # Edition, Version, Revision
-setting_edition = 20221112
-setting_revision = 2
+setting_edition = 20221113
+setting_revision = 1
 setting_version = str(setting_edition) + '.' + str(setting_revision)
 setting_app_title = setting_app_title + ' ' + setting_version
 # Timezone
@@ -54,7 +54,7 @@ PySimpleGUI.theme('CustomTheme')
 setting_address_mod_default = os.path.expanduser('~')
 setting_address_mod_default = setting_address_mod_default.replace('\\', '/')
 setting_address_mod_source = setting_address_mod_default + '/AppData/Roaming/Factorio/mods/'
-setting_address_mod_destination = setting_address_mod_default + '/Desktop/Factorio/'
+setting_address_mod_destination = setting_address_mod_default + '/Desktop/mod/'
 
 def get_time():
     return str((datetime.datetime.utcnow() + datetime.timedelta(hours=setting_app_timezone)).strftime('%Y-%m-%d %H:%M:%S'))
@@ -172,7 +172,7 @@ def graphical_interface_main():
 
                 shutil.copyfile(str(values['address_mod_source_folder']) + str(mod_selection['file_name']), str(values['address_mod_destination_folder']) + str(mod_selection['file_name']))
 
-                graphical_window['interface_text_progress_info'].update(str(i) + ' / ' + str(len(mod_list_en)) + ' - (' + '{:,.1f}'.format(float(i / len(mod_list_en))) + ' %)' + str(mod_selection['title']))
+                graphical_window['interface_text_progress_info'].update(str(i) + ' / ' + str(len(mod_list_en)) + ' - (' + '{:,.1f}'.format(float(100 * i / len(mod_list_en))) + ' %) ' + str(mod_selection['title']))
                 graphical_window['interface_progress_bar'].UpdateBar(i)
 
             graphical_window['interface_text_progress_info'].update('COMPLETED')
