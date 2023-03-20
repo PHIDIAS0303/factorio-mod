@@ -157,11 +157,13 @@ def graphical_interface_main():
                 if mod_list_json[i]['enabled']:
                     mod_list_en.append(mod_list_json[i])
 
-            mod_list_en.remove('base')
             graphical_window['interface_progress_bar'].UpdateBar(0, max=len(mod_list_en))
 
             for i in range(len(mod_list_en)):
-                mod_selection = factorio_mod_lookup(mod_list_en[i]['name'])
+                if not (mod_list_en[i]['name'] == 'base'):
+                    mod_selection = factorio_mod_lookup(mod_list_en[i]['name'])
+                else:
+                    continue
 
                 if not os.path.exists(str(values['address_mod_source_folder']) + str(mod_selection['file_name'])):
                     r = requests.get('https://mods.factorio.com' + str(mod_selection['download_url']), stream=True)
