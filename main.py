@@ -177,6 +177,7 @@ def graphical_interface_main():
                 graphical_window['interface_text_progress_info'].update(str(i) + ' / ' + str(len(mod_list_en)) + ' - (' + '{:,.1f}'.format(float(100 * i / len(mod_list_en))) + ' %) ' + str(mod_selection['title']))
                 graphical_window['interface_progress_bar'].UpdateBar(i)
 
+            shutil.copyfile(str(values['address_mod_source_folder']) + str('mod-list.json'), str(values['address_mod_destination_folder']) + str('mod-list.json'))
             shutil.copyfile(str(values['address_mod_source_folder']) + str('mod-settings.dat'), str(values['address_mod_destination_folder']) + str('mod-settings.dat'))
             graphical_window['interface_text_progress_info'].update('COMPLETED')
 
